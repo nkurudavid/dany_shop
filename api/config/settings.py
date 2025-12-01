@@ -121,6 +121,11 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
+# user model
+AUTH_USER_MODEL = "usr.User"
+# swappable = 'AUTH_USER_MODEL'
+
+
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
