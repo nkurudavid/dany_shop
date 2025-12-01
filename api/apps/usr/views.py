@@ -17,8 +17,8 @@ from apps.usr.permissions import IsNotAdmin
 
 
 
-# User Registration
-class UserRegistrationView(generics.GenericAPIView):
+# User SignUp
+class UserSignUpView(generics.GenericAPIView):
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
