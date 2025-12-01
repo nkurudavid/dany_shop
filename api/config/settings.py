@@ -83,6 +83,9 @@ INSTALLED_APPS = [
     "rest_framework",
     'drf_spectacular',
     "corsheaders",
+    #
+    'apps.usr',
+    'apps.eshop',
 ]
 
 MIDDLEWARE = [
@@ -194,7 +197,7 @@ JWT_COOKIE_SECURE = env_bool("JWT_COOKIE_SECURE", not DEBUG)
 # Django REST Framework configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'apps.usr.authentication.JWTAuthentication',
+        # 'apps.usr.authentication.JWTAuthentication'
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
