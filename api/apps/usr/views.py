@@ -1,6 +1,7 @@
 from django.conf import settings
-from django.contrib.auth import login, logout, update_session_auth_hash
-
+from django.contrib.auth import login, logout, get_user_model, update_session_auth_hash
+from django.core.cache import cache
+from django.core.mail import EmailMessage
 from rest_framework import status, generics, viewsets, mixins
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -11,8 +12,120 @@ from apps.usr.serializers import (
     UserSerializer,
     UserChangePasswordSerializer,
 )
-from apps.usr.utils import generate_jwt_token, get_user_from_token
+from apps.usr.utils import generate_jwt_token, get_user_from_token, generate_otp
 from apps.usr.permissions import IsNotAdmin
+
+
+
+# User Registration
+class UserRegistrationView(generics.GenericAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+
+            if get_user_model().objects.filter(email=email).exists():
+                return Response({"message": "Email already exists"}, status=400)
+
+            user = serializer.save()
+            user.is_active = False
+            user.save()
+
+            # OTP
+            otp = generate_otp()
+            cache_key = f"otp_{user.id}"
+
+            # Store OTP (5 minutes)
+            cache.set(cache_key, otp, timeout=300)
+
+            # Send Email
+            EmailMessage(
+                subject="Account Verification OTP",
+                body=f"Hello {user.first_name},\nYour OTP is {otp}\nExpires in 5 minutes.",
+                from_email=settings.EMAIL_HOST_USER,
+                to=[email],
+            ).send()
+
+            return Response({
+                "message": "Registration successful. OTP sent.",
+                "email": email
+            }, status=201)
+
+        return Response(serializer.errors, status=400)
+
+
+
+# Verify OTP to activate user account
+class VerifyOTPView(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        otp = request.data.get("otp")
+
+        if not email or not otp:
+            return Response({"message": "Email and OTP are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = get_user_model().objects.get(email=email)
+        except get_user_model().DoesNotExist:
+            return Response({"message": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        cache_key = f"otp_{user.id}"
+        stored_otp = cache.get(cache_key)
+
+        if not stored_otp:
+            return Response({"message": "OTP expired or not found. Request a new one."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if stored_otp != otp:
+            return Response({"message": "Invalid OTP."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Activate user
+        user.is_active = True
+        user.save(update_fields=["is_active"])
+        cache.delete(cache_key)
+
+        return Response({"message": "Account activated successfully."}, status=status.HTTP_200_OK)
+    
+
+
+# Resend the OTP
+class ResendOTPView(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        email = request.data.get("email")
+
+        if not email:
+            return Response({"message": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = get_user_model().objects.get(email=email)
+        except get_user_model().DoesNotExist:
+            return Response({"message": "User does not exist."}, status=status.HTTP_404_NOT_FOUND)
+
+        if user.is_active:
+            return Response({"message": "Account already activated."}, status=status.HTTP_400_BAD_REQUEST)
+
+        otp = generate_otp()
+        cache_key = f"otp_{user.id}"
+
+        # Replace old OTP
+        cache.set(cache_key, otp, timeout=300)
+
+        EmailMessage(
+            subject="Your new OTP code",
+            body=f"Hello {user.first_name},\n\nYour new OTP is {otp}.\nExpires in 5 minutes.",
+            from_email=settings.EMAIL_HOST_USER,
+            to=[email],
+        ).send()
+
+        return Response({"message": "A new OTP has been sent to your email."}, status=status.HTTP_200_OK)
+
 
 
 

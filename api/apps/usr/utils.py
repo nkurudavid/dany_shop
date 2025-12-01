@@ -1,6 +1,4 @@
-import datetime
-import jwt
-import logging
+import datetime, jwt, random, logging
 from django.conf import settings
 from django.contrib.auth import get_user_model, logout
 from rest_framework.response import Response
@@ -58,3 +56,10 @@ def handle_session_expired(request):
 def handle_invalid_token():
     logger.error('Invalid token') 
     return None
+
+
+
+
+# otp generator
+def generate_otp():
+    return str(random.randint(100000, 999999))
