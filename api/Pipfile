@@ -16,6 +16,7 @@ drf-nested-routers = "*"
 python-dotenv = "*"
 gunicorn = "*"
 pillow = "*"
+django-redis = "*"
 
 [dev-packages]
 
