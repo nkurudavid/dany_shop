@@ -11,6 +11,8 @@ from apps.usr.serializers import (
     UserLogoutSerializer,
     UserSerializer,
     UserChangePasswordSerializer,
+    VerifyOTPSerializer,
+    ResendOTPSerializer
 )
 from apps.usr.utils import generate_jwt_token, get_user_from_token, generate_otp
 from apps.usr.permissions import IsNotAdmin
@@ -61,70 +63,26 @@ class UserSignUpView(generics.GenericAPIView):
 
 # Verify OTP to activate user account
 class VerifyOTPView(generics.GenericAPIView):
+    serializer_class = VerifyOTPSerializer
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        email = request.data.get("email")
-        otp = request.data.get("otp")
-
-        if not email or not otp:
-            return Response({"message": "Email and OTP are required."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            user = get_user_model().objects.get(email=email)
-        except get_user_model().DoesNotExist:
-            return Response({"message": "User not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        cache_key = f"otp_{user.id}"
-        stored_otp = cache.get(cache_key)
-
-        if not stored_otp:
-            return Response({"message": "OTP expired or not found. Request a new one."}, status=status.HTTP_400_BAD_REQUEST)
-
-        if stored_otp != otp:
-            return Response({"message": "Invalid OTP."}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Activate user
-        user.is_active = True
-        user.save(update_fields=["is_active"])
-        cache.delete(cache_key)
-
-        return Response({"message": "Account activated successfully."}, status=status.HTTP_200_OK)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response({"message": "Account activated successfully."})
     
 
 
 # Resend the OTP
 class ResendOTPView(generics.GenericAPIView):
+    serializer_class = ResendOTPSerializer
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        email = request.data.get("email")
-
-        if not email:
-            return Response({"message": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            user = get_user_model().objects.get(email=email)
-        except get_user_model().DoesNotExist:
-            return Response({"message": "User does not exist."}, status=status.HTTP_404_NOT_FOUND)
-
-        if user.is_active:
-            return Response({"message": "Account already activated."}, status=status.HTTP_400_BAD_REQUEST)
-
-        otp = generate_otp()
-        cache_key = f"otp_{user.id}"
-
-        # Replace old OTP
-        cache.set(cache_key, otp, timeout=300)
-
-        EmailMessage(
-            subject="Your new OTP code",
-            body=f"Hello {user.first_name},\n\nYour new OTP is {otp}.\nExpires in 5 minutes.",
-            from_email=settings.EMAIL_HOST_USER,
-            to=[email],
-        ).send()
-
-        return Response({"message": "A new OTP has been sent to your email."}, status=status.HTTP_200_OK)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        result = serializer.save()
+        return Response(result)
 
 
 

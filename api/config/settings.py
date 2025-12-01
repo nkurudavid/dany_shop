@@ -168,23 +168,21 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Caches settings
 CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient"
-        }
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-local',
     }
 }
 
 
+
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.getenv("EMAIL_HOST"),
-EMAIL_PORT = os.getenv("EMAIL_PORT"),
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER"),
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PSWD"),
-EMAIL_USE_TLS = 'True'
+EMAIL_HOST='smtp.gmail.com'
+EMAIL_PORT= '587'
+EMAIL_HOST_USER= 'nkurudavid44@gmail.com'
+EMAIL_HOST_PASSWORD= 'bsob stlx euej gkvv'
+EMAIL_USE_TLS='True'
 
 
 
@@ -224,7 +222,7 @@ JWT_COOKIE_SECURE = env_bool("JWT_COOKIE_SECURE", not DEBUG)
 # Django REST Framework configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        # 'apps.usr.authentication.JWTAuthentication'
+        'rest_framework.authentication.SessionAuthentication', 
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',

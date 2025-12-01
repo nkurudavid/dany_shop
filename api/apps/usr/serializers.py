@@ -1,6 +1,80 @@
 from django.contrib.auth import authenticate, get_user_model, update_session_auth_hash
+from django.conf import settings
+from django.core.cache import cache
+from django.core.mail import EmailMessage
 from rest_framework import serializers
 from apps.usr.models import UserRole
+from apps.usr.utils import generate_otp
+
+
+
+class VerifyOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField(min_length=6, max_length=6)
+
+    def validate(self, data):
+        email = data.get("email")
+        otp = data.get("otp")
+
+        # Validate user
+        try:
+            user = get_user_model().objects.get(email=email)
+        except get_user_model().DoesNotExist:
+            raise serializers.ValidationError({"message": "User not found."})
+
+        cache_key = f"otp_{user.id}"
+        stored_otp = cache.get(cache_key)
+
+        # Validate OTP existence
+        if not stored_otp:
+            raise serializers.ValidationError(
+                {"message": "OTP expired or invalid. Request a new one."}
+            )
+
+        # Validate OTP correctness
+        if stored_otp != otp:
+            raise serializers.ValidationError({"message": "Incorrect OTP."})
+
+        # Activate User Inside Serializer
+        user.is_active = True
+        user.save(update_fields=["is_active"])
+        cache.delete(cache_key)
+
+        data["user"] = user
+        return data
+
+
+
+class ResendOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        try:
+            user = get_user_model().objects.get(email=value)
+        except get_user_model().DoesNotExist:
+            raise serializers.ValidationError("User not found.")
+
+        if user.is_active:
+            raise serializers.ValidationError("Account already activated.")
+
+        return value
+
+    def save(self):
+        email = self.validated_data["email"]
+        user = get_user_model().objects.get(email=email)
+        otp = generate_otp()
+
+        cache_key = f"otp_{user.id}"
+        cache.set(cache_key, otp, timeout=300)
+
+        EmailMessage(
+            subject="Your new OTP code",
+            body=f"Hello {user.first_name},\n\nYour new OTP is {otp}.\nExpires in 5 minutes.",
+            from_email=settings.EMAIL_HOST_USER,
+            to=[email],
+        ).send()
+
+        return {"message": "A new OTP has been sent to your email."}
 
 
 
