@@ -6,16 +6,22 @@ from apps.usr.views import (
     UserLogoutView,
     CurrentUserDetailView,
     ChangePasswordView,
-    VerifyOTPView,
-    ResendOTPView
+    UserActivateVerifyOTPView,
+    UserActivateResendOTPView,
+    PasswordResetVerifyEmailView,
+    PasswordResetVerifyOTPView,
+    PasswordResetConfirmView,
 )
 
 urlpatterns = [
     path("signup/", UserSignUpView.as_view(), name="sign_up"),
-    path("verify_otp/", VerifyOTPView.as_view(), name="verify_otp"),
-    path("resend_otp/", ResendOTPView.as_view(), name="resend_otp"),
+    path("activate_verify_otp/", UserActivateVerifyOTPView.as_view(), name="activate_verify_otp"),
+    path("activate_resend_otp/", UserActivateResendOTPView.as_view(), name="activate_resend_otp"),
+    path("password_reset_verify_email/", PasswordResetVerifyEmailView.as_view(), name="password_reset_verify_email"),
+    path("password_reset_verify_otp/", PasswordResetVerifyOTPView.as_view(), name="password_reset_verify_otp"),
+    path("password_reset_confirm/", PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
     path('login/', UserLoginView.as_view(), name='login'),
     path('logout/', UserLogoutView.as_view(), name='logout'),
     path('me/change_password/', ChangePasswordView.as_view(), name='change_user_password'),
-    path("me/", CurrentUserDetailView.as_view(), name="current-user")
+    path("me/profile", CurrentUserDetailView.as_view(), name="current_user_profile"),
 ]

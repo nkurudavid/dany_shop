@@ -8,7 +8,7 @@ from apps.usr.utils import generate_otp
 
 
 
-class VerifyOTPSerializer(serializers.Serializer):
+class UserActivateVerifyOTPSerializer(serializers.Serializer):
     email = serializers.EmailField()
     otp = serializers.CharField(min_length=6, max_length=6)
 
@@ -45,7 +45,7 @@ class VerifyOTPSerializer(serializers.Serializer):
 
 
 
-class ResendOTPSerializer(serializers.Serializer):
+class UserActivateResendOTPSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
     def validate_email(self, value):
@@ -78,7 +78,7 @@ class ResendOTPSerializer(serializers.Serializer):
 
 
 
-class UserPasswordResetSerializer(serializers.Serializer):
+class PasswordResetVerifyEmailSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
     def validate_email(self, value):
@@ -93,14 +93,43 @@ class UserPasswordResetSerializer(serializers.Serializer):
         return value
 
 
-class UserPasswordResetConfirmSerializer(serializers.Serializer):
+class PasswordResetVerifyOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField(max_length=6)
+
+    def validate(self, data):
+        email = data.get("email")
+        otp = data.get("otp")
+
+        try:
+            user = get_user_model().objects.get(email=email)
+        except get_user_model().DoesNotExist:
+            raise serializers.ValidationError({"message": "User not found."})
+
+        cache_key = f"password_reset_otp_{user.id}"
+        stored_otp = cache.get(cache_key)
+
+        if not stored_otp:
+            raise serializers.ValidationError({"message": "OTP expired or not found."})
+
+        if stored_otp != otp:
+            raise serializers.ValidationError({"message": "Invalid OTP."})
+
+        return data
+
+
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    email = serializers.EmailField()
     new_password1 = serializers.CharField(max_length=128)
     new_password2 = serializers.CharField(max_length=128)
 
     def validate(self, data):
-        if data['new_password1'] != data['new_password2']:
-            raise serializers.ValidationError({'message':"Passwords do not match."})
+        if data["new_password1"] != data["new_password2"]:
+            raise serializers.ValidationError({"message": "Passwords do not match."})
         return data
+
 
 
 

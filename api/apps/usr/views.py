@@ -11,8 +11,11 @@ from apps.usr.serializers import (
     UserLogoutSerializer,
     UserSerializer,
     UserChangePasswordSerializer,
-    VerifyOTPSerializer,
-    ResendOTPSerializer
+    UserActivateVerifyOTPSerializer,
+    UserActivateResendOTPSerializer,
+    PasswordResetVerifyEmailSerializer,
+    PasswordResetVerifyOTPSerializer,
+    PasswordResetConfirmSerializer
 )
 from apps.usr.utils import generate_jwt_token, get_user_from_token, generate_otp
 from apps.usr.permissions import IsNotAdmin
@@ -61,9 +64,9 @@ class UserSignUpView(generics.GenericAPIView):
 
 
 
-# Verify OTP to activate user account
-class VerifyOTPView(generics.GenericAPIView):
-    serializer_class = VerifyOTPSerializer
+# User Activate Verify OTP to activate user account
+class UserActivateVerifyOTPView(generics.GenericAPIView):
+    serializer_class = UserActivateVerifyOTPSerializer
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
@@ -73,9 +76,9 @@ class VerifyOTPView(generics.GenericAPIView):
     
 
 
-# Resend the OTP
-class ResendOTPView(generics.GenericAPIView):
-    serializer_class = ResendOTPSerializer
+# User Activate Resend the OTP
+class UserActivateResendOTPView(generics.GenericAPIView):
+    serializer_class = UserActivateResendOTPSerializer
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
@@ -87,7 +90,7 @@ class ResendOTPView(generics.GenericAPIView):
 
 
 
-# UserLogin View
+# User Login View
 class UserLoginView(generics.GenericAPIView):
     serializer_class = UserLoginSerializer
     permission_classes = [AllowAny]
@@ -121,7 +124,7 @@ class UserLoginView(generics.GenericAPIView):
 
 
 
-# UserLogout View
+# User Logout View
 class UserLogoutView(generics.GenericAPIView):
     serializer_class = UserLogoutSerializer
     permission_classes = [IsAuthenticated, IsNotAdmin]
@@ -137,7 +140,7 @@ class UserLogoutView(generics.GenericAPIView):
 
 
 
-# ChangePassword View
+# Change Password View
 class ChangePasswordView(generics.UpdateAPIView):
     serializer_class = UserChangePasswordSerializer
     permission_classes = [IsAuthenticated, IsNotAdmin]
@@ -205,3 +208,105 @@ class CurrentUserDetailView(generics.RetrieveUpdateDestroyAPIView):
         response = Response({"message": "Account successfully deleted."}, status=status.HTTP_204_NO_CONTENT)
         response.delete_cookie("jwt")
         return response
+
+
+
+# Password Reset View
+class PasswordResetVerifyEmailView(generics.GenericAPIView):
+    serializer_class = PasswordResetVerifyEmailSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            email = serializer.validated_data["email"]
+            user = get_user_model().objects.get(email=email)
+
+            # Generate OTP
+            otp = generate_otp()
+            cache_key = f"password_reset_otp_{user.id}"
+
+            cache.set(cache_key, otp, timeout=300)  # 5 minutes
+
+            EmailMessage(
+                subject="Password Reset OTP",
+                body=f"Hello {user.first_name},\n\nYour OTP for password reset is: {otp}\n(It expires in 5 minutes.)",
+                from_email=settings.EMAIL_HOST_USER,
+                to=[email],
+            ).send()
+
+            return Response(
+                {"message": "OTP has been sent to your email."},
+                status=status.HTTP_200_OK
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+# Password Reset Verify View
+class PasswordResetVerifyOTPView(generics.GenericAPIView):
+    serializer_class = PasswordResetVerifyOTPSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            email = serializer.validated_data["email"]
+            user = get_user_model().objects.get(email=email)
+
+            # OTP is already validated; now mark user as "verified for reset"
+            cache_key = f"password_reset_verified_{user.id}"
+            cache.set(cache_key, True, timeout=600)  # 10 minutes to complete password reset
+
+            return Response(
+                {"message": "OTP verified. You may now reset your password."},
+                status=status.HTTP_200_OK
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+# Password Reset Confirm View
+class PasswordResetConfirmView(generics.GenericAPIView):
+    serializer_class = PasswordResetConfirmSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            email = serializer.validated_data["email"]
+            new_password = serializer.validated_data["new_password1"]
+
+            try:
+                user = get_user_model().objects.get(email=email)
+            except get_user_model().DoesNotExist:
+                return Response({"message": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+            # Check if OTP was verified
+            verify_key = f"password_reset_verified_{user.id}"
+            verified = cache.get(verify_key)
+
+            if not verified:
+                return Response(
+                    {"message": "OTP verification required before resetting password."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Reset password
+            user.set_password(new_password)
+            user.save()
+
+            # Clean up cache
+            cache.delete(verify_key)
+            cache.delete(f"password_reset_otp_{user.id}")
+
+            return Response({"message": "Password reset successful."}, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
