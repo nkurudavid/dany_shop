@@ -3,7 +3,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import EmailMessage
 from rest_framework import serializers
-from apps.usr.models import UserRole
+from apps.usr.models import UserRole, UserProfile
 from apps.usr.utils import generate_otp
 
 
@@ -201,21 +201,29 @@ class UserChangePasswordSerializer(serializers.Serializer):
 
 
 
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ["phone_number", "country", "province", "district", "sector", "street", "postal_code",]
+
+
+
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False, style={'input_type': 'password'})
-    password_confirmation = serializers.CharField(write_only=True, required=False, style={'input_type': 'password'})
+    password_confirmation = serializers.CharField(write_only=True, required=False, style={'input_type': 'password confirm'})
+
+    profile = UserProfileSerializer(required=False)
 
     class Meta:
         model = get_user_model()
-        fields = ['id', 'first_name', 'last_name', 'role', 'gender', 'is_active', 'email', 'password', 'password_confirmation']
+        fields = ["id", "first_name", "last_name", "role", "gender", "is_active", "email", "password", "password_confirmation", "profile",]
         extra_kwargs = {
-            'email': {'required': False},
-            'is_active': {'read_only': True, 'required': False},
-            'password': {'write_only': True, 'required': False},
-            'password_confirmation': {'write_only': True, 'required': False},
+            "email": {"required": False},
+            "is_active": {"read_only": True, "required": False},
+            "password": {"write_only": True, "required": False},
+            "password_confirmation": {"write_only": True, "required": False},
         }
-        
-        
+
     def validate(self, data):
         user_id = self.instance.id if self.instance else None
 
@@ -231,28 +239,49 @@ class UserSerializer(serializers.ModelSerializer):
         if password and len(password) < 8:
             raise serializers.ValidationError({"password": "Password must be at least 8 characters long."})
 
-        # Check password confirmation
+        # Check password match
         if 'password' in data and 'password_confirmation' in data:
             if data.get('password') != data.pop('password_confirmation', None):
-                raise serializers.ValidationError("The passwords do not match.")
+                raise serializers.ValidationError({"password": "The passwords do not match."})
+
         return data
 
     def create(self, validated_data):
-        password = validated_data.pop('password')
+        profile_data = validated_data.pop("profile", None)
+        password = validated_data.pop("password")
+
         user = self.Meta.model(**validated_data)
         user.set_password(password)
         user.save()
-        return user
-    
-    def update(self, instance, validated_data):
-        password = validated_data.pop('password', None)
-        validated_data.pop('password_confirmation', None)
 
+        # Create profile after user
+        if profile_data:
+            UserProfile.objects.create(user=user, **profile_data)
+
+        return user
+
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop("profile", None)
+        password = validated_data.pop("password", None)
+        validated_data.pop("password_confirmation", None)
+
+        # Update user fields
         instance = super().update(instance, validated_data)
+
+        # Update password
         if password:
             instance.set_password(password)
             instance.save()
+
+        # Update profile if included
+        if profile_data:
+            profile = instance.profile
+            for key, value in profile_data.items():
+                setattr(profile, key, value)
+            profile.save()
+
         return instance
+
 
 
 
