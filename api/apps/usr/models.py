@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from apps.usr.user_manager import UserManager
@@ -28,3 +29,19 @@ class User(AbstractUser):
 
     def __str__(self):
         return "{} {} - {}".format(self.first_name, self.last_name, self.role)
+
+
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(get_user_model(), verbose_name="User", on_delete=models.CASCADE, related_name="profile")
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True, null=True)
+    province = models.CharField(max_length=100, blank=True, null=True)
+    district = models.CharField(max_length=100, blank=True, null=True)
+    sector = models.CharField(max_length=100, blank=True, null=True)
+    street = models.CharField(max_length=255, blank=True, null=True)
+    postal_code = models.CharField(max_length=20, blank=True, null=True)
+
+    def __str__(self):
+        return f"Profile of {self.user.get_full_name()}"

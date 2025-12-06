@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from apps.usr.models import User
+from apps.usr.models import User, UserProfile
 
 
 @admin.register(User)
@@ -33,3 +33,11 @@ class CustomUserAdmin(UserAdmin):
         if obj:  # Editing an existing user >> email becomes read-only
             return self.readonly_fields + ("email",)
         return self.readonly_fields
+
+
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", "phone_number", "country", "province", "district", "sector", "street", "postal_code",)
+    list_filter = ("country", "province", "district",)
+    search_fields = ("user__email", "user__first_name", "user__last_name", "phone_number", "street",)
