@@ -33,7 +33,7 @@ User = get_user_model()
 # ---------------------------
 # Product Category (Seller)
 # ---------------------------
-class ProductCategoryViewSet(
+class ShopProductCategoryViewSet(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
@@ -49,7 +49,7 @@ class ProductCategoryViewSet(
 # ---------------------------
 # Product (Seller CRUD)
 # ---------------------------
-class ProductViewSet(
+class ShopProductViewSet(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
@@ -73,7 +73,7 @@ class ProductViewSet(
 # ---------------------------
 # ProductImage (Seller image uploads)
 # ---------------------------
-class ProductImageViewSet(
+class ShopProductImageViewSet(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
@@ -114,7 +114,7 @@ class ProductImageViewSet(
 # ---------------------------
 # Stock Movement (Seller)
 # ---------------------------
-class StockMovementViewSet(
+class ShopStockMovementViewSet(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
     viewsets.GenericViewSet,
@@ -131,7 +131,7 @@ class StockMovementViewSet(
 # ---------------------------
 # Seller Orders (view + update status)
 # ---------------------------
-class SellerOrderViewSet(
+class ShopOrderViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
@@ -166,7 +166,7 @@ class SellerOrderViewSet(
 # ---------------------------
 # Payments (Seller read-only)
 # ---------------------------
-class PaymentViewSet(
+class ShopOrderPaymentViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     viewsets.GenericViewSet,
@@ -179,7 +179,7 @@ class PaymentViewSet(
 # ---------------------------
 # Reviews (Seller read-only)
 # ---------------------------
-class ReviewAdminViewSet(
+class ShopProductReviewViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     viewsets.GenericViewSet,
@@ -192,7 +192,7 @@ class ReviewAdminViewSet(
 # ---------------------------
 # Seller Dashboard / Analytics / Inventory Endpoints
 # ---------------------------
-class DashboardViewSet(viewsets.ViewSet):
+class ShopDashboardViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated, IsSeller]
 
     def list(self, request):
@@ -212,7 +212,7 @@ class DashboardViewSet(viewsets.ViewSet):
         return Response(DashboardSerializer(data).data)
 
 
-class AnalyticsViewSet(viewsets.ViewSet):
+class ShopAnalyticsViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated, IsSeller]
 
     def list(self, request):
@@ -247,7 +247,7 @@ class AnalyticsViewSet(viewsets.ViewSet):
         return Response(SellerAnalyticsSerializer(payload).data)
 
 
-class InventoryOverviewViewSet(viewsets.ViewSet):
+class ShopInventoryOverviewViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated, IsSeller]
 
     def list(self, request):
@@ -296,7 +296,7 @@ class CustomerProductViewSet(
 
 
 # Wishlist (customer own)
-class WishlistViewSet(
+class CustomerWishlistViewSet(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
@@ -351,55 +351,69 @@ class CustomerOrderViewSet(
             "shipping_address": "...",
             "order_note": "...",           # optional
             "payment_method": "COD",       # optional
+            "payment_details": {           # optional, only if not COD
+                "payment_id": "...",
+                "amount": "...",
+                "status": "pending|success|failed",
+            },
             "items": [
                 {"product": <id>, "quantity": <int>, "price": "12.50"},
                 ...
             ]
         }
-        This will:
-          - create the Order
-          - create OrderItem rows
-          - update Order.total_amount via calculate_total()
-          - reduce product quantity immediately and create a StockMovement (Stock Out)
         """
         payload = request.data
         items = payload.get("items", [])
         if not items:
             return Response({"detail": "items required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        with transaction.atomic():
-            order = Order.objects.create(
-                client=request.user,
-                shipping_address=payload.get("shipping_address", ""),
-                order_note=payload.get("order_note", ""),
-                payment_method=payload.get("payment_method", "COD"),
+        payment_method = payload.get("payment_method", "COD")
+        payment_details = payload.get("payment_details", {})
+
+        # 1️⃣ Create Order
+        order = Order.objects.create(
+            client=request.user,
+            shipping_address=payload.get("shipping_address", ""),
+            order_note=payload.get("order_note", ""),
+            payment_method=payment_method,
+        )
+
+        # 2️⃣ Create Order Items & Stock Movements
+        for it in items:
+            prod_id = it.get("product")
+            qty = int(it.get("quantity", 1))
+            price = Decimal(str(it.get("price", "0")))
+            product = get_object_or_404(Product, pk=prod_id)
+
+            # create order item
+            OrderItem.objects.create(order=order, product=product, quantity=qty, price=price)
+
+            # decrease stock via StockMovement
+            StockMovement.objects.create(
+                product=product,
+                movement_type=MovementType.STOCK_OUT,
+                quantity=qty,
+                total_price=price * qty,
+                processed_by=None,
+                notes=f"Order {order.order_number} created by customer"
             )
 
-            for it in items:
-                prod_id = it.get("product")
-                qty = int(it.get("quantity", 1))
-                price = Decimal(str(it.get("price", "0")))
+        # 3️⃣ Recalculate total
+        order.calculate_total()
+        order.save()
 
-                product = get_object_or_404(Product, pk=prod_id)
-
-                # create order item
-                OrderItem.objects.create(order=order, product=product, quantity=qty, price=price)
-
-                # decrease stock via StockMovement so model logic keeps consistency
-                StockMovement.objects.create(
-                    product=product,
-                    movement_type=MovementType.STOCK_OUT,
-                    quantity=qty,
-                    total_price=price * qty,
-                    processed_by=None,
-                    notes=f"Order {order.order_number} created by customer"
-                )
-
-            # recalc total
-            order.calculate_total()
-            order.save()
+        # 4️⃣ Create Payment if not COD or “Cash on Delivery.”
+        if payment_method.upper() != "COD":
+            Payment.objects.create(
+                order=order,
+                amount=order.total_amount,
+                payment_method=payment_method,
+                payment_id=payment_details.get("payment_id", ""),
+                status=payment_details.get("status", "pending"),
+            )
 
         return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
+
 
 
 # Customer profile (dashboard)

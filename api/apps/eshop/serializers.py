@@ -21,7 +21,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductImage
-        fields = ['file_name', 'mime_type', 'image_base64', 'created_at']
+        fields = ['id', 'file_name', 'mime_type', 'image_base64', 'created_at']
 
     def get_image_base64(self, obj):
         import base64
@@ -36,7 +36,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     product_images = ProductImageSerializer(many=True, read_only=True)
     average_rating = serializers.SerializerMethodField()
-    in_stock = serializers.BooleanField(source='in_stock', read_only=True)
+    in_stock = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Product
@@ -171,7 +171,7 @@ class ShopOverviewSerializer(serializers.Serializer):
 class CustomerProductDetailSerializer(serializers.ModelSerializer):
     product_images = ProductImageSerializer(many=True, read_only=True)
     average_rating = serializers.SerializerMethodField()
-    in_stock = serializers.BooleanField(source='in_stock', read_only=True)
+    in_stock = serializers.BooleanField(read_only=True)
     category_name = serializers.CharField(source='category.category_name', read_only=True)
     reviews = ReviewSerializer(many=True, read_only=True)
 

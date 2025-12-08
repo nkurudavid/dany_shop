@@ -13,6 +13,7 @@ urlpatterns = [
 
     # API Endpoints
     path('api/auth/', include('apps.usr.urls')),
+    path('api/', include('apps.eshop.urls')),
     
     # API Schema / Docs
     path('api/schema/file', SpectacularAPIView.as_view(), name='schema'),

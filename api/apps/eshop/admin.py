@@ -1,9 +1,12 @@
+import base64
 from django.contrib import admin
 from django.utils.html import format_html
 from django.db.models import Sum, Count, Avg
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from .models import (
+
+from apps.eshop.admin_forms import ProductImageAdminForm, ProductImageForm
+from apps.eshop.models import (
     ProductCategory, Product, ProductImage, StockMovement,
     Wishlist, Order, OrderItem, Payment, Review
 )
@@ -14,9 +17,12 @@ from .models import (
 # ===========================
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
+    form = ProductImageForm
     extra = 1
-    readonly_fields = ['image_preview']
-    fields = ['file_name', 'mime_type', 'image_data', 'image_preview']
+
+    readonly_fields = ['file_name', 'mime_type', 'image_preview']
+    fields = ['upload', 'file_name', 'mime_type', 'image_preview']
+
 
 
 
@@ -140,12 +146,38 @@ class ProductAdmin(admin.ModelAdmin):
 # ===========================
 @admin.register(ProductImage)
 class ProductImageAdmin(admin.ModelAdmin):
+    form = ProductImageAdminForm
+
     list_display = ['product', 'image_preview', 'created_at']
     list_filter = ['product__category', 'created_at']
     search_fields = ['product__product_name']
-    readonly_fields = ['image_preview', 'created_at']
-    fields = ['product', 'file_name', 'mime_type', 'image_data', 'image_preview', 'created_at']
+    readonly_fields = ['file_name', 'mime_type', 'image_data', 'image_preview', 'created_at']
+
+    fields = ['product', 'upload_image', 'file_name', 'mime_type', 'image_data', 'image_preview', 'created_at']
+
     list_per_page = 20
+
+    def save_model(self, request, obj, form, change):
+        """
+        Handle uploaded file, convert & store into BinaryField.
+        """
+        file = form.cleaned_data.get("upload_image")
+
+        if file:
+            obj.file_name = file.name
+            obj.mime_type = getattr(file, "content_type", "application/octet-stream")
+            obj.image_data = file.read()
+
+        super().save_model(request, obj, form, change)
+
+    def image_preview(self, obj):
+        if not obj.image_data:
+            return "No Image"
+        encoded = base64.b64encode(obj.image_data).decode("utf-8")
+        return mark_safe(f'<img src="data:{obj.mime_type};base64,{encoded}" width="100" />')
+
+    image_preview.short_description = "Preview"
+
 
 
 
