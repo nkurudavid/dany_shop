@@ -1,0 +1,18 @@
+{% extends "admin/base.html" %}
+
+{% block title %}E-Shop Admin{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">E-Shop Administration</a></h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block content %}
+{% if low_stock_warning %}
+    <div style="background:#ffcc00;padding:10px;margin:10px 0;border-radius:6px;">
+        ⚠ {{ low_stock_warning }}
+    </div>
+{% endif %}
+{{ block.super }}
+{% endblock %}

@@ -1,9 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from apps.usr.models import User, UserProfile
+from apps.eshop.admin import custom_admin_site  # Import the custom admin site
 
 
-@admin.register(User)
 class CustomUserAdmin(UserAdmin):
     list_display = ("email", "first_name", "last_name", "role", "gender", "is_active", "is_staff", "created_at",)
     list_display_links = ("email",)
@@ -35,9 +35,12 @@ class CustomUserAdmin(UserAdmin):
         return self.readonly_fields
 
 
-
-@admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = ("user", "phone_number", "country", "province", "district", "sector", "street", "postal_code",)
     list_filter = ("country", "province", "district",)
     search_fields = ("user__email", "user__first_name", "user__last_name", "phone_number", "street",)
+
+
+# Register with custom admin site
+custom_admin_site.register(User, CustomUserAdmin)
+custom_admin_site.register(UserProfile, UserProfileAdmin)

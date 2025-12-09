@@ -2,7 +2,7 @@ import base64
 from django.contrib import admin
 from django.utils.html import format_html
 from django.db import models
-from django.db.models import Sum, Count, Avg, F
+from django.db.models import Sum, Count, Avg
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.template.response import TemplateResponse
@@ -22,9 +22,11 @@ class ProductImageInline(admin.TabularInline):
     model = ProductImage
     form = ProductImageForm
     extra = 1
+
     readonly_fields = ['file_name', 'mime_type', 'image_preview']
-    # fields = ['upload_image', 'file_name', 'mime_type', 'image_preview']
     fields = ['upload', 'file_name', 'mime_type', 'image_preview']
+
+
 
 
 class OrderItemInline(admin.TabularInline):
@@ -52,76 +54,9 @@ class StockMovementInline(admin.TabularInline):
 
 
 # ===========================
-# Custom Admin Site
-# ===========================
-class CustomAdminSite(admin.AdminSite):
-    site_header = "E-Shop Administration"
-    site_title = "E-Shop Admin Portal"
-    index_title = "Welcome to E-Shop Administration"
-    
-    def index(self, request, extra_context=None):
-        total_products = Product.objects.count()
-        total_quantity = Product.objects.aggregate(models.Sum("quantity"))["quantity__sum"] or 0
-
-        total_value = Product.objects.annotate(
-            total=models.F("quantity") * models.F("price")
-        ).aggregate(models.Sum("total"))["total__sum"] or 0
-
-        out_of_stock = Product.objects.filter(quantity=0).count()
-        low_stock = Product.objects.filter(quantity__lt=10, quantity__gt=0).count()
-
-        context = {
-            **self.each_context(request),
-            "total_products": total_products,
-            "total_quantity": total_quantity,
-            "total_value": total_value,
-            "out_of_stock": out_of_stock,
-            "low_stock": low_stock,
-        }
-
-        return TemplateResponse(request, "admin/custom_dashboard.html", context)
-    
-    def get_urls(self):
-        urls = super().get_urls()
-        custom_urls = [
-            path("inventory-report/", self.admin_view(self.inventory_report_view)),
-        ]
-        return custom_urls + urls
-    
-    def inventory_report_view(self, request):
-        """View for inventory report"""
-        products = Product.objects.all().annotate(
-            stock_value=F("quantity") * F("price")
-        ).order_by('-stock_value')
-
-        total_value = products.aggregate(
-            total=Sum(F('quantity') * F('price'))
-        )['total'] or 0
-
-        context = {
-            **self.each_context(request),
-            "products": products,
-            "total_value": total_value,
-        }
-        return TemplateResponse(request, "admin/inventory_report.html", context)
-    
-    def each_context(self, request):
-        context = super().each_context(request)
-        low_stock = Product.objects.filter(quantity__lt=10, quantity__gt=0).count()
-
-        if low_stock > 0:
-            context["low_stock_warning"] = f"{low_stock} products are running low on stock!"
-
-        return context
-
-
-# Create custom admin site instance
-custom_admin_site = CustomAdminSite(name="custom_admin")
-
-
-# ===========================
 # Product Category Admin
 # ===========================
+@admin.register(ProductCategory)
 class ProductCategoryAdmin(admin.ModelAdmin):
     list_display = ['category_name', 'product_count', 'description_preview']
     search_fields = ['category_name', 'description']
@@ -143,6 +78,7 @@ class ProductCategoryAdmin(admin.ModelAdmin):
 # ===========================
 # Product Admin
 # ===========================
+@admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = [
         'product_name', 'category', 'price_display', 'quantity',
@@ -154,7 +90,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_per_page = 25
     date_hierarchy = 'created_at'
     inlines = [ProductImageInline, StockMovementInline]
-
+    
     fieldsets = (
         ('Basic Information', {
             'fields': ('category', 'product_name', 'description')
@@ -167,13 +103,12 @@ class ProductAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
-
+    
     def price_display(self, obj):
-        formatted_price = f"{obj.price:,.2f}"
-        return format_html("<strong>${}</strong>", formatted_price)
+        return format_html('<strong>${:,.2f}</strong>', obj.price)
     price_display.short_description = 'Price'
     price_display.admin_order_field = 'price'
-
+    
     def stock_status(self, obj):
         if obj.quantity == 0:
             return format_html('<span style="color: red; font-weight: bold;">Out of Stock</span>')
@@ -182,7 +117,7 @@ class ProductAdmin(admin.ModelAdmin):
         else:
             return format_html('<span style="color: green; font-weight: bold;">In Stock</span>')
     stock_status.short_description = 'Status'
-
+    
     def average_rating_display(self, obj):
         avg = obj.average_rating
         if avg:
@@ -190,20 +125,19 @@ class ProductAdmin(admin.ModelAdmin):
             return format_html('{} ({:.1f}/5)', stars, avg)
         return 'No reviews'
     average_rating_display.short_description = 'Rating'
-
+    
     def total_reviews(self, obj):
         count = obj.reviews.count()
         return f'{count} review(s)'
     total_reviews.short_description = 'Total Reviews'
-
+    
     def stock_value(self, obj):
         value = obj.price * obj.quantity
-        formatted_value = f"{value:,.2f}"
-        return format_html("<strong>${}</strong>", formatted_value)
+        return format_html('<strong>${:,.2f}</strong>', value)
     stock_value.short_description = 'Stock Value'
-
+    
     actions = ['mark_out_of_stock']
-
+    
     def mark_out_of_stock(self, request, queryset):
         queryset.update(quantity=0)
         self.message_user(request, f'{queryset.count()} products marked as out of stock.')
@@ -213,13 +147,16 @@ class ProductAdmin(admin.ModelAdmin):
 # ===========================
 # Product Image Admin
 # ===========================
+@admin.register(ProductImage)
 class ProductImageAdmin(admin.ModelAdmin):
     form = ProductImageAdminForm
-    list_display = ['product', 'image_preview', 'file_name', 'created_at']
+
+    list_display = ['product', 'image_preview', 'created_at']
     list_filter = ['product__category', 'created_at']
-    search_fields = ['product__product_name', 'file_name']
+    search_fields = ['product__product_name']
     readonly_fields = ['file_name', 'mime_type', 'image_data', 'image_preview', 'created_at']
     fields = ['product', 'upload_image', 'file_name', 'mime_type', 'image_data', 'image_preview', 'created_at']
+
     list_per_page = 20
 
     def save_model(self, request, obj, form, change):
@@ -248,9 +185,12 @@ class ProductImageAdmin(admin.ModelAdmin):
     image_preview.short_description = "Preview"
 
 
+
+
 # ===========================
 # Stock Movement Admin
 # ===========================
+@admin.register(StockMovement)
 class StockMovementAdmin(admin.ModelAdmin):
     list_display = [
         'product', 'movement_type', 'quantity', 'total_price_display',
@@ -285,6 +225,7 @@ class StockMovementAdmin(admin.ModelAdmin):
 # ===========================
 # Wishlist Admin
 # ===========================
+@admin.register(Wishlist)
 class WishlistAdmin(admin.ModelAdmin):
     list_display = ['user', 'product', 'product_price', 'added_date']
     list_filter = ['added_date', 'product__category']
@@ -302,6 +243,7 @@ class WishlistAdmin(admin.ModelAdmin):
 # ===========================
 # Order Admin
 # ===========================
+@admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = [
         'order_number', 'client', 'status_display', 'total_amount_display',
@@ -388,6 +330,7 @@ class OrderAdmin(admin.ModelAdmin):
 # ===========================
 # Order Item Admin
 # ===========================
+@admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
     list_display = ['order', 'product', 'quantity', 'price_display', 'subtotal_display']
     list_filter = ['order__status', 'order__created_date']
@@ -408,6 +351,7 @@ class OrderItemAdmin(admin.ModelAdmin):
 # ===========================
 # Payment Admin
 # ===========================
+@admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
     list_display = [
         'order', 'amount_display', 'payment_method',
@@ -443,6 +387,7 @@ class PaymentAdmin(admin.ModelAdmin):
 # ===========================
 # Review Admin
 # ===========================
+@admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
     list_display = [
         'product', 'user', 'rating_display', 'comment_preview',
@@ -478,17 +423,68 @@ class ReviewAdmin(admin.ModelAdmin):
         queryset.delete()
         self.message_user(request, f'{count} reviews deleted.')
     delete_reviews.short_description = 'Delete selected reviews'
+    
+    
+    
+    
+    
+    
+class CustomAdminSite(admin.AdminSite):
+    def index(self, request, extra_context=None):
+
+        total_products = Product.objects.count()
+        total_quantity = Product.objects.aggregate(models.Sum("quantity"))["quantity__sum"] or 0
+
+        total_value = Product.objects.annotate(
+            total=models.F("quantity") * models.F("price")
+        ).aggregate(models.Sum("total"))["total__sum"] or 0
+
+        out_of_stock = Product.objects.filter(quantity=0).count()
+        low_stock = Product.objects.filter(quantity__lt=10, quantity__gt=0).count()
+
+        context = {
+            **self.each_context(request),
+            "total_products": total_products,
+            "total_quantity": total_quantity,
+            "total_value": total_value,
+            "out_of_stock": out_of_stock,
+            "low_stock": low_stock,
+        }
+
+        return TemplateResponse(request, "admin/custom_dashboard.html", context)
+    
+    
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path("inventory-report/", self.admin_view(inventory_report)),
+        ]
+        return custom_urls + urls
+    
+    
+    def each_context(self, request):
+        context = super().each_context(request)
+        low_stock = Product.objects.filter(quantity__lt=10).count()
+
+        if low_stock > 0:
+            context["low_stock_warning"] = f"{low_stock} products are running low on stock!"
+
+        return context
+    
+
+    
+
+def inventory_report(request):
+    products = Product.objects.all().annotate(
+        stock_value=models.F("quantity") * models.F("price")
+    )
+
+    context = {
+        "products": products,
+    }
+    return TemplateResponse(request, "admin/inventory_report.html", context)
 
 
-# ===========================
-# Register Models with Custom Admin Site
-# ===========================
-custom_admin_site.register(ProductCategory, ProductCategoryAdmin)
-custom_admin_site.register(Product, ProductAdmin)
-custom_admin_site.register(ProductImage, ProductImageAdmin)
-custom_admin_site.register(StockMovement, StockMovementAdmin)
-custom_admin_site.register(Wishlist, WishlistAdmin)
-custom_admin_site.register(Order, OrderAdmin)
-custom_admin_site.register(OrderItem, OrderItemAdmin)
-custom_admin_site.register(Payment, PaymentAdmin)
-custom_admin_site.register(Review, ReviewAdmin)
+
+    
+custom_admin_site = CustomAdminSite(name="custom_admin")

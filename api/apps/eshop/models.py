@@ -25,7 +25,7 @@ class Product(models.Model):
     category = models.ForeignKey(ProductCategory, verbose_name="Category", related_name='products', on_delete=models.CASCADE)
     product_name = models.CharField(verbose_name="Product Name", max_length=100, unique=True, db_index=True)
     description = models.TextField(verbose_name="Description", blank=True, null=True)
-    price = models.DecimalField(verbose_name="Price", max_digits=10, decimal_places=2, default=0.00, validators=[MinValueValidator(0.00)])
+    price = models.DecimalField(verbose_name="Price", max_digits=12, decimal_places=2, default=0.00, validators=[MinValueValidator(0.00)])
     quantity = models.IntegerField(verbose_name="Quantity", default=0, validators=[MinValueValidator(0)])
     unit = models.CharField(verbose_name="Unit", max_length=5, choices=UnitChoices.choices, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -88,7 +88,7 @@ class StockMovement(models.Model):
     product = models.ForeignKey(Product, verbose_name="Product", related_name="stock_movements", on_delete=models.CASCADE)
     movement_type = models.CharField(verbose_name="Movement Type", choices=MovementType.choices, max_length=15)
     quantity = models.IntegerField(verbose_name="Quantity", validators=[MinValueValidator(1)])
-    total_price = models.DecimalField(verbose_name="Total Price", max_digits=10, decimal_places=2, default=0.00)
+    total_price = models.DecimalField(verbose_name="Total Price", max_digits=20, decimal_places=2, default=0.00)
     processed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     notes = models.TextField(verbose_name="Notes", blank=True, null=True)
     created_date = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -101,13 +101,27 @@ class StockMovement(models.Model):
     def __str__(self):
         return f"{self.product.product_name} - {self.movement_type} - {self.quantity}"
 
+    @property
+    def quantity_changed(self):
+        """Calculate how quantity should change based on movement type."""
+        if self.movement_type == MovementType.STOCK_IN:
+            return self.quantity
+        elif self.movement_type == MovementType.STOCK_OUT:
+            return -self.quantity
+        return 0
+
     def save(self, *args, **kwargs):
-        if self.pk is None:
-            if self.movement_type == self.MovementType.STOCK_IN:
-                self.product.quantity += self.quantity
-            elif self.movement_type == self.MovementType.STOCK_OUT:
-                self.product.quantity = max(0, self.product.quantity - self.quantity)
-            self.product.save()
+        # Only update product quantity if this is NOT coming from a signal
+        # and if this is a new StockMovement
+        if not self.pk and not getattr(self, '_skip_stock_update', False):
+            # Update product quantity directly using update() to avoid triggering signals
+            from django.db.models import F
+            Product.objects.filter(pk=self.product.pk).update(
+                quantity=F('quantity') + self.quantity_changed
+            )
+            # Refresh the product instance
+            self.product.refresh_from_db()
+        
         super().save(*args, **kwargs)
 
 

@@ -5,10 +5,11 @@ from django.shortcuts import render
 from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
-
+from apps.eshop.admin import custom_admin_site
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # path('admin/', admin.site.urls),
+    path('admin/', custom_admin_site.urls),
     
 
     # API Endpoints
