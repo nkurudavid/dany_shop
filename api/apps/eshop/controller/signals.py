@@ -3,6 +3,7 @@ from django.dispatch import receiver
 from django.db import transaction
 from django.core.mail import send_mail
 from django.db.models import F
+from decimal import Decimal
 
 from apps.eshop.models import Product, StockMovement, Order, OrderItem
 from apps.eshop.constants import MovementType, OrderStatus
@@ -43,7 +44,7 @@ def create_movement_for_product_change(sender, instance, created, **kwargs):
                 product=instance,
                 movement_type=MovementType.STOCK_IN,
                 quantity=instance.quantity,
-                total_price=instance.price * instance.quantity,
+                total_price=Decimal(str(instance.price)) * Decimal(str(instance.quantity)),
                 notes="Initial stock on product creation",
             )
             movement._skip_stock_update = True  # Don't update stock again
@@ -61,7 +62,7 @@ def create_movement_for_product_change(sender, instance, created, **kwargs):
             product=instance,
             movement_type=MovementType.STOCK_IN,
             quantity=diff,
-            total_price=instance.price * diff,
+            total_price=Decimal(str(instance.price)) * Decimal(str(diff)),
             notes="Manual stock increase in admin",
         )
         movement._skip_stock_update = True  # Don't update stock again
@@ -73,7 +74,7 @@ def create_movement_for_product_change(sender, instance, created, **kwargs):
             product=instance,
             movement_type=MovementType.STOCK_OUT,
             quantity=diff,
-            total_price=instance.price * diff,
+            total_price=Decimal(str(instance.price)) * Decimal(str(diff)),
             notes="Manual stock decrease in admin",
         )
         movement._skip_stock_update = True  # Don't update stock again
@@ -121,12 +122,14 @@ def handle_order_stock(sender, instance, created, **kwargs):
                     Product.objects.filter(pk=product.pk).update(quantity=0)
                     product.quantity = 0
 
-                # Record stock movement
+                # Record stock movement with proper decimal calculation
+                total_price = Decimal(str(item.quantity)) * Decimal(str(product.price))
+                
                 movement = StockMovement(
                     product=product,
                     movement_type=MovementType.STOCK_OUT,
                     quantity=item.quantity,
-                    total_price=item.quantity * product.price,
+                    total_price=total_price,
                     notes=f"Order #{instance.order_number} processed",
                 )
                 movement._skip_stock_update = True  # Stock already updated above

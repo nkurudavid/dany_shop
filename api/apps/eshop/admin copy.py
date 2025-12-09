@@ -37,7 +37,7 @@ class OrderItemInline(admin.TabularInline):
     
     def subtotal_display(self, obj):
         if obj.pk:
-            return format_html('<strong>${:,.2f}</strong>', obj.subtotal)
+            return format_html('<strong>Rwf{:,.2f}</strong>', obj.subtotal)
         return '-'
     subtotal_display.short_description = 'Subtotal'
 
@@ -105,7 +105,7 @@ class ProductAdmin(admin.ModelAdmin):
     )
     
     def price_display(self, obj):
-        return format_html('<strong>${:,.2f}</strong>', obj.price)
+        return format_html('<strong>Rwf{:,.2f}</strong>', obj.price)
     price_display.short_description = 'Price'
     price_display.admin_order_field = 'price'
     
@@ -133,7 +133,7 @@ class ProductAdmin(admin.ModelAdmin):
     
     def stock_value(self, obj):
         value = obj.price * obj.quantity
-        return format_html('<strong>${:,.2f}</strong>', value)
+        return format_html('<strong>Rwf{:,.2f}</strong>', value)
     stock_value.short_description = 'Stock Value'
     
     actions = ['mark_out_of_stock']
@@ -212,7 +212,7 @@ class StockMovementAdmin(admin.ModelAdmin):
     )
     
     def total_price_display(self, obj):
-        return format_html('${:,.2f}', obj.total_price)
+        return format_html('Rwf{:,.2f}', obj.total_price)
     total_price_display.short_description = 'Total Price'
     total_price_display.admin_order_field = 'total_price'
     
@@ -235,7 +235,7 @@ class WishlistAdmin(admin.ModelAdmin):
     list_per_page = 25
     
     def product_price(self, obj):
-        return format_html('${:,.2f}', obj.product.price)
+        return format_html('Rwf{:,.2f}', obj.product.price)
     product_price.short_description = 'Price'
     product_price.admin_order_field = 'product__price'
 
@@ -290,7 +290,7 @@ class OrderAdmin(admin.ModelAdmin):
     status_display.admin_order_field = 'status'
     
     def total_amount_display(self, obj):
-        return format_html('<strong>${:,.2f}</strong>', obj.total_amount)
+        return format_html('<strong>Rwf{:,.2f}</strong>', obj.total_amount)
     total_amount_display.short_description = 'Total'
     total_amount_display.admin_order_field = 'total_amount'
     
@@ -339,12 +339,12 @@ class OrderItemAdmin(admin.ModelAdmin):
     list_per_page = 25
     
     def price_display(self, obj):
-        return format_html('${:,.2f}', obj.price)
+        return format_html('Rwf{:,.2f}', obj.price)
     price_display.short_description = 'Price'
     price_display.admin_order_field = 'price'
     
     def subtotal_display(self, obj):
-        return format_html('<strong>${:,.2f}</strong>', obj.subtotal)
+        return format_html('<strong>Rwf{:,.2f}</strong>', obj.subtotal)
     subtotal_display.short_description = 'Subtotal'
 
 
@@ -364,7 +364,7 @@ class PaymentAdmin(admin.ModelAdmin):
     list_per_page = 25
     
     def amount_display(self, obj):
-        return format_html('<strong>${:,.2f}</strong>', obj.amount)
+        return format_html('<strong>Rwf{:,.2f}</strong>', obj.amount)
     amount_display.short_description = 'Amount'
     amount_display.admin_order_field = 'amount'
     

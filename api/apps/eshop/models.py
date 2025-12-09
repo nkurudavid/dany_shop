@@ -88,7 +88,7 @@ class StockMovement(models.Model):
     product = models.ForeignKey(Product, verbose_name="Product", related_name="stock_movements", on_delete=models.CASCADE)
     movement_type = models.CharField(verbose_name="Movement Type", choices=MovementType.choices, max_length=15)
     quantity = models.IntegerField(verbose_name="Quantity", validators=[MinValueValidator(1)])
-    total_price = models.DecimalField(verbose_name="Total Price", max_digits=20, decimal_places=2, default=0.00)
+    total_price = models.DecimalField(verbose_name="Total Price", max_digits=12, decimal_places=2, default=0.00)
     processed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     notes = models.TextField(verbose_name="Notes", blank=True, null=True)
     created_date = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -116,11 +116,22 @@ class StockMovement(models.Model):
         if not self.pk and not getattr(self, '_skip_stock_update', False):
             # Update product quantity directly using update() to avoid triggering signals
             from django.db.models import F
+            
+            # Calculate the change
+            change = self.quantity_changed
+            
+            # Update using F() expression
             Product.objects.filter(pk=self.product.pk).update(
-                quantity=F('quantity') + self.quantity_changed
+                quantity=F('quantity') + change
             )
+            
             # Refresh the product instance
             self.product.refresh_from_db()
+            
+            # Ensure quantity doesn't go negative
+            if self.product.quantity < 0:
+                Product.objects.filter(pk=self.product.pk).update(quantity=0)
+                self.product.quantity = 0
         
         super().save(*args, **kwargs)
 

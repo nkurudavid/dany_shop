@@ -164,7 +164,7 @@
     
     <div class="stat-card">
         <h3>Total Stock Value</h3>
-        <div class="value">${{ total_value|floatformat:2 }}</div>
+        <div class="value">Rwf{{ total_value|floatformat:2 }}</div>
     </div>
     
     <div class="stat-card">
@@ -201,9 +201,9 @@
                 </a>
             </td>
             <td>{{ product.category.category_name }}</td>
-            <td style="text-align: right; font-weight: 500;">${{ product.price|floatformat:2 }}</td>
+            <td style="text-align: right; font-weight: 500;">Rwf{{ product.price|floatformat:2 }}</td>
             <td style="text-align: right; font-weight: 500;">{{ product.quantity }}</td>
-            <td style="text-align: right; font-weight: 600; color: #28a745;">${{ product.stock_value|floatformat:2 }}</td>
+            <td style="text-align: right; font-weight: 600; color: #28a745;">Rwf{{ product.stock_value|floatformat:2 }}</td>
             <td style="text-align: center;">
                 {% if product.quantity == 0 %}
                     <span class="status-badge status-out">OUT OF STOCK</span>
