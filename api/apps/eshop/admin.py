@@ -35,7 +35,7 @@ class OrderItemInline(admin.TabularInline):
     
     def subtotal_display(self, obj):
         if obj.pk:
-            return format_html('<strong>Rwf{:,.2f}</strong>', obj.subtotal)
+            return format_html('<strong>Frw {:,.2f}</strong>', obj.subtotal)
         return '-'
     subtotal_display.short_description = 'Subtotal'
 
@@ -151,8 +151,8 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter = ['category', 'unit', 'created_at']
     search_fields = ['product_name', 'description', 'category__category_name']
     readonly_fields = ['created_at', 'average_rating_display', 'total_reviews', 'stock_value']
-    list_per_page = 25
     date_hierarchy = 'created_at'
+    list_per_page = 20
     inlines = [ProductImageInline, StockMovementInline]
 
     fieldsets = (
@@ -170,7 +170,7 @@ class ProductAdmin(admin.ModelAdmin):
 
     def price_display(self, obj):
         formatted_price = f"{obj.price:,.2f}"
-        return format_html("<strong>Rwf{}</strong>", formatted_price)
+        return format_html("<strong>Frw {}</strong>", formatted_price)
     price_display.short_description = 'Price'
     price_display.admin_order_field = 'price'
 
@@ -199,7 +199,7 @@ class ProductAdmin(admin.ModelAdmin):
     def stock_value(self, obj):
         value = obj.price * obj.quantity
         formatted_value = f"{value:,.2f}"
-        return format_html("<strong>Rwf{}</strong>", formatted_value)
+        return format_html("<strong>Frw {}</strong>", formatted_value)
     stock_value.short_description = 'Stock Value'
 
     actions = ['mark_out_of_stock']
@@ -260,7 +260,7 @@ class StockMovementAdmin(admin.ModelAdmin):
     search_fields = ['product__product_name', 'notes']
     readonly_fields = ['created_date', 'processed_by']
     date_hierarchy = 'created_date'
-    list_per_page = 25
+    list_per_page = 20
     
     fieldsets = (
         ('Movement Details', {
@@ -273,7 +273,7 @@ class StockMovementAdmin(admin.ModelAdmin):
     
     def total_price_display(self, obj):
         try:
-            return format_html('Rwf{:,.2f}', float(obj.total_price))
+            return format_html('Frw {:,.2f}', float(obj.total_price))
         except (ValueError, TypeError):
             # fallback if total_price is None or not a number
             return obj.total_price
@@ -290,10 +290,10 @@ class WishlistAdmin(admin.ModelAdmin):
     search_fields = ['user__username', 'user__email', 'product__product_name']
     readonly_fields = ['added_date']
     date_hierarchy = 'added_date'
-    list_per_page = 25
+    list_per_page = 20
     
     def product_price(self, obj):
-        return format_html('Rwf{:,.2f}', obj.product.price)
+        return format_html('Frw {:,.2f}', obj.product.price)
     product_price.short_description = 'Price'
     product_price.admin_order_field = 'product__price'
 
@@ -310,7 +310,7 @@ class OrderAdmin(admin.ModelAdmin):
     search_fields = ['order_number', 'client__username', 'client__email', 'payment_id']
     readonly_fields = ['order_number', 'created_date', 'updated_date', 'payment_status']
     date_hierarchy = 'created_date'
-    list_per_page = 25
+    list_per_page = 20
     inlines = [OrderItemInline]
     
     fieldsets = (
@@ -347,7 +347,7 @@ class OrderAdmin(admin.ModelAdmin):
     status_display.admin_order_field = 'status'
     
     def total_amount_display(self, obj):
-        return format_html('<strong>Rwf{:,.2f}</strong>', obj.total_amount)
+        return format_html('<strong>Frw {:,.2f}</strong>', obj.total_amount)
     total_amount_display.short_description = 'Total'
     total_amount_display.admin_order_field = 'total_amount'
     
@@ -392,15 +392,15 @@ class OrderItemAdmin(admin.ModelAdmin):
     list_filter = ['order__status', 'order__created_date']
     search_fields = ['order__order_number', 'product__product_name']
     readonly_fields = ['subtotal_display']
-    list_per_page = 25
+    list_per_page = 20
     
     def price_display(self, obj):
-        return format_html('Rwf{:,.2f}', obj.price)
+        return format_html('Frw {:,.2f}', obj.price)
     price_display.short_description = 'Price'
     price_display.admin_order_field = 'price'
     
     def subtotal_display(self, obj):
-        return format_html('<strong>Rwf{:,.2f}</strong>', obj.subtotal)
+        return format_html('<strong>Frw {:,.2f}</strong>', obj.subtotal)
     subtotal_display.short_description = 'Subtotal'
 
 
@@ -416,10 +416,10 @@ class PaymentAdmin(admin.ModelAdmin):
     search_fields = ['order__order_number', 'payment_id']
     readonly_fields = ['created_date', 'updated_date']
     date_hierarchy = 'created_date'
-    list_per_page = 25
+    list_per_page = 20
     
     def amount_display(self, obj):
-        return format_html('<strong>Rwf{:,.2f}</strong>', obj.amount)
+        return format_html('<strong>Frw {:,.2f}</strong>', obj.amount)
     amount_display.short_description = 'Amount'
     amount_display.admin_order_field = 'amount'
     
@@ -451,7 +451,7 @@ class ReviewAdmin(admin.ModelAdmin):
     search_fields = ['product__product_name', 'user__username', 'comment']
     readonly_fields = ['created_date', 'updated_date']
     date_hierarchy = 'created_date'
-    list_per_page = 25
+    list_per_page = 20
     
     def rating_display(self, obj):
         stars = '⭐' * obj.rating

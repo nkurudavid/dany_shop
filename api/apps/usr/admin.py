@@ -11,6 +11,7 @@ class CustomUserAdmin(UserAdmin):
     search_fields = ("email", "first_name", "last_name")
     ordering = ("-created_at",)
     readonly_fields = ("created_at",)
+    list_per_page = 20
     
     fieldsets = (
         ("Login Credentials", {"fields": ("email", "password")}),
@@ -39,6 +40,7 @@ class UserProfileAdmin(admin.ModelAdmin):
     list_display = ("user", "phone_number", "country", "province", "district", "sector", "street", "postal_code",)
     list_filter = ("country", "province", "district",)
     search_fields = ("user__email", "user__first_name", "user__last_name", "phone_number", "street",)
+    list_per_page = 20
 
 
 # Register with custom admin site
