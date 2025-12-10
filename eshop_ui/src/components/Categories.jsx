@@ -1,8 +1,8 @@
 const categoriesData = [
-    { id: 1, name: "Electronics", image: "https://via.placeholder.com/300x150" },
-    { id: 2, name: "Fashion", image: "https://via.placeholder.com/300x150" },
-    { id: 3, name: "Home & Garden", image: "https://via.placeholder.com/300x150" },
-    { id: 4, name: "Beauty", image: "https://via.placeholder.com/300x150" },
+    { id: 1, name: "Electronics", image: "https://afzalcorp.com.pk/wp-content/uploads/2025/04/Best-Electronics-Stores-in-Pakistan.jpg" },
+    { id: 2, name: "Fashion", image: "https://www.downtownalexandria.com/wp-content/uploads/2019/04/storedashery-12-1024x684.jpg" },
+    { id: 3, name: "Beauty", image: "https://cloudfront-eu-central-1.images.arcpublishing.com/businessoffashion/2UDNDDYDAZB57EYGS55VRAW7AQ.jpg" },
+    { id: 4, name: "Perfumes", image: "https://d1ef7ke0x2i9g8.cloudfront.net/singapore/_1200x630_crop_center-center_82_none/Scents-for-Women-That-Are-Worth-Splurging-on-From-Luxury-Brands.jpg?mtime=1731467862" },
 ];
 
 export default function Categories() {

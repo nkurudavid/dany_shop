@@ -1,10 +1,10 @@
 import { useLanguage } from "../context/LanguageContext";
 
 const productsData = [
-    { id: 1, name: "Product 1", price: 29.99, image: "https://via.placeholder.com/150" },
-    { id: 2, name: "Product 2", price: 49.99, image: "https://via.placeholder.com/150" },
-    { id: 3, name: "Product 3", price: 19.99, image: "https://via.placeholder.com/150" },
-    { id: 4, name: "Product 4", price: 39.99, image: "https://via.placeholder.com/150" },
+    { id: 1, name: "Ti House", price: 29.99, image: "https://tie-house.com/wp-content/uploads/2025/01/2-48.jpg" },
+    { id: 2, name: "Jeans", price: 9.99, image: "https://cdn.britannica.com/74/190774-050-52CE5745/jeans-denim-pants-clothing.jpg" },
+    { id: 3, name: "Initio Parfums", price: 29.99, image: "https://hrd-live.cdn.scayle.cloud/images/c05945a9fd3490cb98e85e74efcc84ee.jpg?brightness=1&width=922&height=1230&quality=75&bg=ffffff" },
+    { id: 4, name: "Speaker", price: 69.99, image: "https://wirata.com.my/wp20201001/wp-content/uploads/2020/11/SP50S-05.png" },
 ];
 
 export default function FeaturedProducts() {
