@@ -37,33 +37,33 @@ export const CUSTOMER_ENDPOINTS = {
 // Shop Owner Endpoints
 export const SHOP_ENDPOINTS = {
   DASHBOARD: '/shop/dashboard/',
-  
+
   // Categories
   CATEGORIES: '/shop/categories/',
   CATEGORY_DETAIL: (id) => `/shop/categories/${id}/`,
-  
+
   // Products
   PRODUCTS: '/shop/products/',
   PRODUCT_DETAIL: (id) => `/shop/products/${id}/`,
   PRODUCT_IMAGES: (productId) => `/shop/products/${productId}/images/`,
   PRODUCT_IMAGE_DELETE: (productId, imageId) => `/shop/products/${productId}/images/${imageId}/`,
-  
+
   // Stock Management
   STOCK_MOVEMENTS: '/shop/stock-movements/',
   INVENTORY: '/shop/inventory/',
-  
+
   // Orders
   ORDERS: '/shop/orders/',
   ORDER_DETAIL: (id) => `/shop/orders/${id}/`,
-  
+
   // Payments
   PAYMENTS: '/shop/payments/',
   PAYMENT_DETAIL: (id) => `/shop/payments/${id}/`,
-  
+
   // Reviews
   REVIEWS: '/shop/reviews/',
   REVIEW_DETAIL: (id) => `/shop/reviews/${id}/`,
-  
+
   // Analytics
   ANALYTICS: '/shop/analytics/',
 };

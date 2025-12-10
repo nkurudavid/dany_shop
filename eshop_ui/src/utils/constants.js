@@ -35,6 +35,6 @@ export const PRODUCT_UNITS = {
 };
 
 export const PAYMENT_METHODS = {
-  COD: 'COD',
-  ONLINE: 'Online',
+    COD: 'COD',
+    ONLINE: 'Online',
 };

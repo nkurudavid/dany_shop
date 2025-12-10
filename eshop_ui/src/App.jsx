@@ -1,9 +1,13 @@
+import Navbar from "./components/Navbar";
+import Intro from "./components/Intro";
+
 function App() {
   return (
-    <h1 className="text-3xl font-bold underline">
-      Hello world!
-    </h1>
-  )
+    <div className="min-h-screen bg-white dark:bg-secondary-dark text-secondary dark:text-white transition-all">
+      <Navbar />
+      <Intro />
+    </div>
+  );
 }
 
 export default App;

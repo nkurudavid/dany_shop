@@ -39,7 +39,7 @@ export const CartProvider = ({ children }) => {
       toast.error('Quantity must be at least 1');
       return;
     }
-    
+
     setCart(cart.map(item =>
       item.id === productId ? { ...item, quantity } : item
     ));
@@ -49,7 +49,7 @@ export const CartProvider = ({ children }) => {
   const removeFromCart = (productId) => {
     const product = cart.find(item => item.id === productId);
     setCart(cart.filter(item => item.id !== productId));
-    
+
     if (product) {
       toast.success(`${product.product_name} removed from cart`, {
         icon: '🗑️',

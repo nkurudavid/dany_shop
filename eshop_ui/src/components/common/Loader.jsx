@@ -1,11 +1,11 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 
-const Loader = ({ 
-  size = 'md', 
-  text = 'Loading...', 
+const Loader = ({
+  size = 'md',
+  text = 'Loading...',
   fullScreen = false,
-  className = '' 
+  className = ''
 }) => {
   const sizes = {
     sm: 'w-4 h-4',

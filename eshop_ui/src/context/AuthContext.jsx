@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
       toast.success('Signup successful! Please check your email for OTP verification.');
       return data;
     } catch (error) {
-      const errorMessage = error.response?.data?.detail 
+      const errorMessage = error.response?.data?.detail
         || error.response?.data?.email?.[0]
         || error.response?.data?.password?.[0]
         || 'Signup failed. Please try again.';
@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }) => {
       toast.success('Account activated successfully! You can now login.');
       return data;
     } catch (error) {
-      const errorMessage = error.response?.data?.detail 
+      const errorMessage = error.response?.data?.detail
         || error.response?.data?.otp?.[0]
         || 'Invalid OTP. Please try again.';
       toast.error(errorMessage);
@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }) => {
       toast.success('OTP has been resent to your email.');
       return data;
     } catch (error) {
-      const errorMessage = error.response?.data?.detail 
+      const errorMessage = error.response?.data?.detail
         || 'Failed to resend OTP. Please try again.';
       toast.error(errorMessage);
       throw error;
@@ -89,18 +89,18 @@ export const AuthProvider = ({ children }) => {
         password,
         role,
       });
-      
+
       if (data.access) {
         Cookies.set('access_token', data.access, { expires: 7 });
       }
-      
+
       await checkAuth();
       toast.success(`Welcome back${user?.first_name ? `, ${user.first_name}` : ''}!`, {
         icon: '👋',
       });
       return data;
     } catch (error) {
-      const errorMessage = error.response?.data?.detail 
+      const errorMessage = error.response?.data?.detail
         || error.response?.data?.non_field_errors?.[0]
         || 'Invalid credentials. Please try again.';
       toast.error(errorMessage);
@@ -134,7 +134,7 @@ export const AuthProvider = ({ children }) => {
       toast.success('OTP has been sent to your email.');
       return data;
     } catch (error) {
-      const errorMessage = error.response?.data?.detail 
+      const errorMessage = error.response?.data?.detail
         || error.response?.data?.email?.[0]
         || 'Email verification failed. Please try again.';
       toast.error(errorMessage);
@@ -152,7 +152,7 @@ export const AuthProvider = ({ children }) => {
       toast.success('OTP verified. Please set your new password.');
       return data;
     } catch (error) {
-      const errorMessage = error.response?.data?.detail 
+      const errorMessage = error.response?.data?.detail
         || error.response?.data?.otp?.[0]
         || 'Invalid OTP. Please try again.';
       toast.error(errorMessage);
@@ -171,7 +171,7 @@ export const AuthProvider = ({ children }) => {
       toast.success('Password reset successful! You can now login with your new password.');
       return data;
     } catch (error) {
-      const errorMessage = error.response?.data?.detail 
+      const errorMessage = error.response?.data?.detail
         || error.response?.data?.new_password1?.[0]
         || error.response?.data?.new_password2?.[0]
         || 'Password reset failed. Please try again.';
@@ -191,7 +191,7 @@ export const AuthProvider = ({ children }) => {
       toast.success('Password changed successfully!');
       return data;
     } catch (error) {
-      const errorMessage = error.response?.data?.detail 
+      const errorMessage = error.response?.data?.detail
         || error.response?.data?.old_password?.[0]
         || error.response?.data?.new_password?.[0]
         || error.response?.data?.confirm_password?.[0]
@@ -209,7 +209,7 @@ export const AuthProvider = ({ children }) => {
       toast.success('Profile updated successfully!');
       return data;
     } catch (error) {
-      const errorMessage = error.response?.data?.detail 
+      const errorMessage = error.response?.data?.detail
         || 'Profile update failed. Please try again.';
       toast.error(errorMessage);
       throw error;
@@ -236,7 +236,7 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       toast.success('Account deleted successfully');
     } catch (error) {
-      const errorMessage = error.response?.data?.detail 
+      const errorMessage = error.response?.data?.detail
         || 'Account deletion failed. Please try again.';
       toast.error(errorMessage);
       throw error;
@@ -246,7 +246,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     loading,
-    
+
     // Auth functions
     signup,
     verifyActivationOTP,
@@ -254,12 +254,12 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     checkAuth,
-    
+
     // Password reset functions
     passwordResetVerifyEmail,
     passwordResetVerifyOTP,
     passwordResetConfirm,
-    
+
     // Profile functions
     changePassword,
     updateProfile,

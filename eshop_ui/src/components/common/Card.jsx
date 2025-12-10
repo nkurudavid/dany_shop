@@ -1,7 +1,7 @@
 import React from 'react';
 
-const Card = ({ 
-  children, 
+const Card = ({
+  children,
   className = '',
   padding = 'md',
   hover = false,
@@ -17,7 +17,7 @@ const Card = ({
   const hoverClass = hover ? 'hover:shadow-xl transition-shadow duration-300 cursor-pointer' : '';
 
   return (
-    <div 
+    <div
       className={`bg-white rounded-lg shadow-md ${paddings[padding]} ${hoverClass} ${className}`}
       onClick={onClick}
     >

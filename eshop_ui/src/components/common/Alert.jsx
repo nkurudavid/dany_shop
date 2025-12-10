@@ -1,10 +1,10 @@
 import React from 'react';
 import { AlertCircle, CheckCircle, Info, XCircle, X } from 'lucide-react';
 
-const Alert = ({ 
-  type = 'info', 
+const Alert = ({
+  type = 'info',
   title,
-  message, 
+  message,
   onClose,
   className = '',
 }) => {

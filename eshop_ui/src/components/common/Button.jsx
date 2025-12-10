@@ -46,13 +46,13 @@ const Button = ({
       {loading && (
         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
       )}
-      
+
       {!loading && Icon && iconPosition === 'left' && (
         <Icon className="w-4 h-4 mr-2" />
       )}
-      
+
       <span>{children}</span>
-      
+
       {!loading && Icon && iconPosition === 'right' && (
         <Icon className="w-4 h-4 ml-2" />
       )}
