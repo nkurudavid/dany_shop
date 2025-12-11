@@ -23,7 +23,7 @@ const Header = ({ onCartOpen }) => {
       <div className="container mx-auto px-4 py-3 lg:py-4">
         <div className="flex items-center justify-between gap-4">
           {/* Mobile Menu Button */}
-          <button 
+          <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition"
           >
@@ -35,8 +35,8 @@ const Header = ({ onCartOpen }) => {
           </button>
 
           {/* Logo */}
-          <button 
-            onClick={() => navigate('/')} 
+          <button
+            onClick={() => navigate('/')}
             className="flex items-center flex-shrink-0"
           >
             <h1 className="text-2xl lg:text-3xl font-bold">
@@ -46,7 +46,7 @@ const Header = ({ onCartOpen }) => {
           </button>
 
           {/* Desktop Search Bar */}
-          <form 
+          <form
             onSubmit={handleSearch}
             className="hidden lg:flex flex-1 max-w-xl"
           >
@@ -57,7 +57,7 @@ const Header = ({ onCartOpen }) => {
               placeholder="Search products..."
               className="flex-1 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:border-blue-500 transition"
             />
-            <button 
+            <button
               type="submit"
               className="px-6 bg-gray-900 text-white rounded-r-lg hover:bg-gray-800 transition"
             >
@@ -69,7 +69,7 @@ const Header = ({ onCartOpen }) => {
           <div className="flex items-center space-x-2 lg:space-x-3">
             {/* Wishlist - Hidden on mobile, shown for logged-in users */}
             {user && (
-              <button 
+              <button
                 onClick={() => navigate('/customer/wishlist')}
                 className="hidden md:flex p-2 hover:bg-gray-100 rounded-lg transition relative"
               >
@@ -78,7 +78,7 @@ const Header = ({ onCartOpen }) => {
             )}
 
             {/* User Account */}
-            <button 
+            <button
               onClick={() => {
                 if (user) {
                   navigate(user.role === 'customer' ? '/customer/dashboard' : '/shop/dashboard');
@@ -92,7 +92,7 @@ const Header = ({ onCartOpen }) => {
             </button>
 
             {/* Cart */}
-            <button 
+            <button
               onClick={onCartOpen}
               className="relative p-2 hover:bg-gray-100 rounded-lg transition"
             >
@@ -107,7 +107,7 @@ const Header = ({ onCartOpen }) => {
         </div>
 
         {/* Mobile Search */}
-        <form 
+        <form
           onSubmit={handleSearch}
           className="lg:hidden mt-3"
         >
@@ -119,7 +119,7 @@ const Header = ({ onCartOpen }) => {
               placeholder="Search products..."
               className="flex-1 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:border-blue-500"
             />
-            <button 
+            <button
               type="submit"
               className="px-4 bg-gray-900 text-white rounded-r-lg"
             >
@@ -133,13 +133,13 @@ const Header = ({ onCartOpen }) => {
       {mobileMenuOpen && (
         <div className="lg:hidden bg-white border-t border-gray-200">
           <nav className="container mx-auto px-4 py-4 space-y-2">
-            <button 
+            <button
               onClick={() => { navigate('/'); setMobileMenuOpen(false); }}
               className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition"
             >
               Home
             </button>
-            <button 
+            <button
               onClick={() => { navigate('/products'); setMobileMenuOpen(false); }}
               className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition"
             >
@@ -147,17 +147,17 @@ const Header = ({ onCartOpen }) => {
             </button>
             {user && (
               <>
-                <button 
-                  onClick={() => { 
-                    navigate(user.role === 'customer' ? '/customer/dashboard' : '/shop/dashboard'); 
-                    setMobileMenuOpen(false); 
+                <button
+                  onClick={() => {
+                    navigate(user.role === 'customer' ? '/customer/dashboard' : '/shop/dashboard');
+                    setMobileMenuOpen(false);
                   }}
                   className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition"
                 >
                   Dashboard
                 </button>
                 {user.role === 'customer' && (
-                  <button 
+                  <button
                     onClick={() => { navigate('/customer/wishlist'); setMobileMenuOpen(false); }}
                     className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition"
                   >
@@ -166,13 +166,13 @@ const Header = ({ onCartOpen }) => {
                 )}
               </>
             )}
-            <button 
+            <button
               onClick={() => { navigate('/about'); setMobileMenuOpen(false); }}
               className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition"
             >
               About
             </button>
-            <button 
+            <button
               onClick={() => { navigate('/contact'); setMobileMenuOpen(false); }}
               className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition"
             >

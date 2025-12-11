@@ -17,37 +17,37 @@ const Footer = () => {
               ShopPro<span className="text-blue-500">.</span>
             </h3>
             <p className="text-sm mb-4 leading-relaxed">
-              Your trusted e-commerce platform for quality products at competitive prices. 
+              Your trusted e-commerce platform for quality products at competitive prices.
               Shop with confidence and enjoy seamless shopping experience.
             </p>
             <div className="flex space-x-3">
-              <a 
-                href="https://facebook.com" 
-                target="_blank" 
+              <a
+                href="https://facebook.com"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 bg-gray-800 rounded-full hover:bg-blue-500 transition"
               >
                 <Facebook className="w-4 h-4" />
               </a>
-              <a 
-                href="https://twitter.com" 
-                target="_blank" 
+              <a
+                href="https://twitter.com"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 bg-gray-800 rounded-full hover:bg-blue-400 transition"
               >
                 <Twitter className="w-4 h-4" />
               </a>
-              <a 
-                href="https://instagram.com" 
-                target="_blank" 
+              <a
+                href="https://instagram.com"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 bg-gray-800 rounded-full hover:bg-pink-500 transition"
               >
                 <Instagram className="w-4 h-4" />
               </a>
-              <a 
-                href="https://linkedin.com" 
-                target="_blank" 
+              <a
+                href="https://linkedin.com"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 bg-gray-800 rounded-full hover:bg-blue-600 transition"
               >
@@ -61,7 +61,7 @@ const Footer = () => {
             <h4 className="text-white font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <button 
+                <button
                   onClick={() => navigate('/about')}
                   className="hover:text-blue-500 transition"
                 >
@@ -69,7 +69,7 @@ const Footer = () => {
                 </button>
               </li>
               <li>
-                <button 
+                <button
                   onClick={() => navigate('/products')}
                   className="hover:text-blue-500 transition"
                 >
@@ -77,7 +77,7 @@ const Footer = () => {
                 </button>
               </li>
               <li>
-                <button 
+                <button
                   onClick={() => navigate('/contact')}
                   className="hover:text-blue-500 transition"
                 >
@@ -85,7 +85,7 @@ const Footer = () => {
                 </button>
               </li>
               <li>
-                <button 
+                <button
                   onClick={() => navigate('/faq')}
                   className="hover:text-blue-500 transition"
                 >
@@ -100,7 +100,7 @@ const Footer = () => {
             <h4 className="text-white font-semibold mb-4">Customer Service</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <button 
+                <button
                   onClick={() => navigate('/terms')}
                   className="hover:text-blue-500 transition"
                 >
@@ -108,7 +108,7 @@ const Footer = () => {
                 </button>
               </li>
               <li>
-                <button 
+                <button
                   onClick={() => navigate('/privacy')}
                   className="hover:text-blue-500 transition"
                 >
@@ -116,7 +116,7 @@ const Footer = () => {
                 </button>
               </li>
               <li>
-                <button 
+                <button
                   onClick={() => navigate('/returns')}
                   className="hover:text-blue-500 transition"
                 >
@@ -124,7 +124,7 @@ const Footer = () => {
                 </button>
               </li>
               <li>
-                <button 
+                <button
                   onClick={() => navigate('/shipping')}
                   className="hover:text-blue-500 transition"
                 >

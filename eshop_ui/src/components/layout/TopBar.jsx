@@ -13,15 +13,15 @@ const TopBar = () => {
         <div className="flex items-center justify-between py-2 text-xs lg:text-sm">
           {/* Left side - Contact Info */}
           <div className="flex items-center space-x-4 lg:space-x-6 text-gray-600">
-            <a 
-              href="tel:+0608008015582" 
+            <a
+              href="tel:+0608008015582"
               className="flex items-center space-x-1 hover:text-blue-500 transition"
             >
               <Phone className="w-3 h-3 lg:w-4 lg:h-4" />
               <span className="hidden lg:inline">+060 (800) 801-582</span>
             </a>
-            <a 
-              href="mailto:support@shoppro.com" 
+            <a
+              href="mailto:support@shoppro.com"
               className="flex items-center space-x-1 hover:text-blue-500 transition"
             >
               <Mail className="w-3 h-3 lg:w-4 lg:h-4" />
@@ -40,7 +40,7 @@ const TopBar = () => {
               <span>Daily Deal</span>
             </button>
             {user ? (
-              <button 
+              <button
                 onClick={() => navigate(user.role === 'customer' ? '/customer/dashboard' : '/shop/dashboard')}
                 className="flex items-center space-x-1 hover:text-blue-500 transition"
               >
@@ -48,7 +48,7 @@ const TopBar = () => {
                 <span>My Account</span>
               </button>
             ) : (
-              <button 
+              <button
                 onClick={() => navigate('/login')}
                 className="flex items-center space-x-1 hover:text-blue-500 transition"
               >

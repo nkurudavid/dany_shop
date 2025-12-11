@@ -23,7 +23,7 @@ const Navbar = () => {
         <div className="flex items-center">
           {/* Categories Dropdown */}
           <div className="relative">
-            <button 
+            <button
               onClick={() => setShowCategories(!showCategories)}
               onMouseEnter={() => setShowCategories(true)}
               onMouseLeave={() => setShowCategories(false)}
@@ -33,9 +33,9 @@ const Navbar = () => {
               <span className="font-semibold">CATEGORIES</span>
               <ChevronDown className="w-4 h-4" />
             </button>
-            
+
             {showCategories && (
-              <div 
+              <div
                 className="absolute top-full left-0 w-64 bg-white shadow-lg z-50 rounded-b-lg"
                 onMouseEnter={() => setShowCategories(true)}
                 onMouseLeave={() => setShowCategories(false)}
@@ -60,31 +60,31 @@ const Navbar = () => {
 
           {/* Main Navigation Links */}
           <div className="flex items-center space-x-8 ml-8">
-            <button 
+            <button
               onClick={() => navigate('/')}
               className="py-4 hover:text-blue-400 transition font-medium relative group"
             >
               Home
               <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 scale-x-0 group-hover:scale-x-100 transition-transform"></span>
             </button>
-            
-            <button 
+
+            <button
               onClick={() => navigate('/products')}
               className="py-4 hover:text-blue-400 transition font-medium relative group"
             >
               Products
               <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 scale-x-0 group-hover:scale-x-100 transition-transform"></span>
             </button>
-            
-            <button 
+
+            <button
               onClick={() => navigate('/about')}
               className="py-4 hover:text-blue-400 transition font-medium relative group"
             >
               About
               <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 scale-x-0 group-hover:scale-x-100 transition-transform"></span>
             </button>
-            
-            <button 
+
+            <button
               onClick={() => navigate('/contact')}
               className="py-4 hover:text-blue-400 transition font-medium relative group"
             >

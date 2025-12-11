@@ -13,14 +13,14 @@ const MainLayout = ({ children }) => {
       <TopBar />
       <Header onCartOpen={() => setCartOpen(true)} />
       <Navbar />
-      
+
       <main className="flex-1 bg-gray-50">
         {children}
       </main>
-      
+
       <Footer />
-      
-      <CartSidebar 
+
+      <CartSidebar
         isOpen={cartOpen}
         onClose={() => setCartOpen(false)}
       />
